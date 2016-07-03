@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/hpcloud/tail"
 	"net/http"
-	"net/url"
 	"os"
 )
 

@@ -1,10 +1,8 @@
-package client
+package main
 
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"net/http"
-	"net/url"
 	"os"
 )
 
@@ -22,7 +20,7 @@ func main() {
 	url := fmt.Sprintf("%s?path=%s", dest, path)
 
 	// open websocket
-	conn, resp, err := websocket.DefaultDialer.Dial(url, nil)
+	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 
 	if err != nil {
 		fmt.Println("Failed to establish tunnel\nDeveloper Details: ", err.Error())
@@ -37,7 +35,7 @@ func main() {
 		_, log, err := conn.ReadMessage()
 
 		if err != nil {
-			fmt.Println("Failed to read from tunnel\nDeveloper Details: ", err.Error(), "\nExiting...")
+			fmt.Println("Tunnel closed\nDeveloper Details: ", err.Error(), "\nExiting...")
 			os.Exit(4)
 		}
 

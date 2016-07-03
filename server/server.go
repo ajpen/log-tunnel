@@ -20,6 +20,8 @@ func startTunnel(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	defer wsoconn.Close()
+
 	// parse path from request
 	query := req.URL.Query()
 
@@ -57,7 +59,7 @@ func startTunnel(rw http.ResponseWriter, req *http.Request) {
 	// tail file and send new lines over websocket
 	for line := range tail.Lines {
 
-		err = wsoconn.WriteMessage(8398, []byte(line.Text))
+		err = wsoconn.WriteMessage(websocket.TextMessage, []byte(line.Text))
 
 		if err != nil {
 			fmt.Println("Failed to send message through tunnel. Tunnel must have been broken. Developer details: ",
@@ -69,14 +71,16 @@ func startTunnel(rw http.ResponseWriter, req *http.Request) {
 
 func main() {
 
-	if len(os.Args) != 2 {
-		panic("Usage: ./tunnel-server port")
+	if len(os.Args) != 3 {
+		panic("Usage: ./tunnel-server address port")
 	}
 
-	port := os.Args[1]
+	address, port := os.Args[1], os.Args[2]
+
+	listenOn := fmt.Sprintf("%s:%s", address, port)
 
 	http.HandleFunc("/tunnel", startTunnel)
-	if err := http.ListenAndServe(port, nil); err != nil {
+	if err := http.ListenAndServe(listenOn, nil); err != nil {
 		panic(err)
 	}
 }

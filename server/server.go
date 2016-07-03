@@ -6,6 +6,7 @@ import (
 	"github.com/hpcloud/tail"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -16,14 +17,28 @@ func startTunnel(rw http.ResponseWriter, req *http.Request) {
 	wsoconn, err := upgrader.Upgrade(rw, req, nil)
 
 	if err != nil {
-		fmt.Println("Failed to upgrade http request. Developer details: ", err.Error(), "\nExiting")
+		fmt.Println("Failed to upgrade http request. Developer details: ", err.Error(), "\n")
 		return
 	}
 
 	// parse path from request
 	query := req.URL.Query()
 
-	path := query["path"][0]
+	var path string
+
+	if p, ok := query["path"]; ok {
+		if len(p) > 0 {
+			path = p[0]
+
+		} else {
+			fmt.Println("Failed to specify path in request.")
+			return
+		}
+
+	} else {
+		fmt.Println("Failed to specify path in request.")
+		return
+	}
 
 	// set up tail
 	tail, err := tail.TailFile(path, tail.Config{
@@ -50,5 +65,19 @@ func startTunnel(rw http.ResponseWriter, req *http.Request) {
 				err.Error())
 			return
 		}
+	}
+}
+
+func main() {
+
+	if len(os.Args) != 2 {
+		panic("Usage: ./tunnel-server port")
+	}
+
+	port := os.Args[1]
+
+	http.HandleFunc("/tunnel", startTunnel)
+	if err := http.ListenAndServe(port, nil); err != nil {
+		panic(err)
 	}
 }

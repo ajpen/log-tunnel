@@ -49,13 +49,13 @@ func main() {
 	// open websocket
 	conn, _, err := websocket.DefaultDialer.Dial(url.String(), nil)
 
-	// allow signal handler to access websocket conn for graceful exit
-	wsConn = conn
-
 	if err != nil {
 		fmt.Println("Failed to establish tunnel\nDeveloper Details: ", err.Error())
 		os.Exit(2)
 	}
+
+	// allow signal handler to access websocket conn for graceful exit
+	wsConn = conn
 
 	fmt.Println("Tunnel Established. Now streaming ", path, " from: ", url.String(), "\n\n")
 
